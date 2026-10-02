@@ -61,7 +61,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .track { display: flex; transition: transform .55s cubic-bezier(.2,.7,.2,1); will-change: transform; }
 .viewport.dragging .track { transition: none; }
 /* PC: 왼쪽 16:9 썸네일 / 오른쪽 위 헤드라인, 아래 POINT */
-.slide { flex: 0 0 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "img q" "img p"; column-gap: 40px; row-gap: 22px; padding-block: 18px 32px; padding-left: 24px; }
+.slide { flex: 0 0 100%; min-width: 0; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "img q" "img p"; column-gap: 40px; row-gap: 22px; padding-block: 18px 32px; padding-left: 24px; }
 .slide img { -webkit-user-drag: none; pointer-events: none; }
 .hero-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 18px; border-top: 1px solid rgba(255,255,255,.55); flex-wrap: wrap; }
 .ctrl { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
