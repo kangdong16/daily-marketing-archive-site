@@ -8,11 +8,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
-/* Layout: lime trend-magazine band (quote headline · thumbnail · POINT) → category rows of image cards → archive lists with black-ruled rows + 더보기
-   Single deliberate light look (lime / ink / paper / orange sticker), so no dark variant. */
+/* Layout: neon-violet trend-magazine band (discovery mark · headline · thumbnail · POINT) → category rows of image cards → archive lists with black-ruled rows + 더보기
+   Single deliberate light look (neon violet / ink / paper / orange sticker), so no dark variant. */
 :root {
   color-scheme: light;
-  --lime: #E1FF01;
+  --neon: #9B4DFF;          /* 형광 보라 (메인) */
+  --neon-deep: #6A4BFF;     /* 블루 바이올렛 (그라데이션 끝) */
+  --neon-pink: #C86BFF;     /* 핑크 바이올렛 (그라데이션 시작) */
+  --neon-soft: #D9BBFF;     /* 하이라이트·흰 바탕 위 강조 */
+  --neon-glow: #E9DAFF;     /* 검정 바탕 위 강조 글씨 */
+  --hero-bg: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon) 45%, var(--neon-deep) 100%);
   --ink: #0F0F0F;
   --paper: #F6F5F1;
   --white: #FFFFFF;
@@ -35,10 +40,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .util .wrap { display: flex; gap: 20px; align-items: center; justify-content: space-between; min-height: 36px; flex-wrap: wrap; }
 .util nav { display: flex; gap: 18px; flex-wrap: wrap; }
 .util nav a { opacity: .85; font-weight: 500; }
-.util nav a:hover { opacity: 1; color: var(--lime); }
+.util nav a:hover { opacity: 1; color: var(--neon-glow); }
 
-/* sticky lime bar */
-.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--lime); border-bottom: 1px solid var(--ink); }
+/* sticky neon-violet bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--hero-bg); color: var(--white); border-bottom: 1px solid var(--ink); }
 .bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; flex-wrap: wrap; padding-block: 10px; }
 .mark { font-weight: 900; font-size: 20px; letter-spacing: -0.8px; line-height: 1.1; }
 .mark small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
@@ -50,7 +55,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .search svg { flex: none; margin-right: 8px; }
 
 /* hero */
-.hero { background: var(--lime); padding-block: 36px 0; overflow: hidden; }
+.hero { background: var(--hero-bg); color: var(--white); padding-block: 36px 0; overflow: hidden; }
 .viewport { overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; }
 .viewport.dragging { cursor: grabbing; }
 .track { display: flex; transition: transform .55s cubic-bezier(.2,.7,.2,1); will-change: transform; }
@@ -58,37 +63,44 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 /* PC: 왼쪽 16:9 썸네일 / 오른쪽 위 헤드라인, 아래 POINT */
 .slide { flex: 0 0 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "img q" "img p"; column-gap: 40px; row-gap: 22px; padding-block: 18px 32px; padding-left: 24px; }
 .slide img { -webkit-user-drag: none; pointer-events: none; }
-.hero-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 18px; border-top: 1px solid var(--ink); flex-wrap: wrap; }
+.hero-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 18px; border-top: 1px solid rgba(255,255,255,.55); flex-wrap: wrap; }
 .ctrl { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
 .ctrl button { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); cursor: pointer; display: grid; place-items: center; padding: 0; }
 .ctrl button:hover { background: var(--ink); }
-.ctrl button:hover path { stroke: var(--lime); }
+.ctrl button:hover path { stroke: var(--neon-glow); }
 .ctrl .count { min-width: 56px; text-align: center; }
 .dots { display: flex; gap: 6px; }
-.dots button { width: 8px; height: 8px; border-radius: 999px; border: 0; padding: 0; background: rgba(15,15,15,.25); cursor: pointer; transition: width .3s; }
-.dots button[aria-current="true"] { width: 22px; background: var(--ink); }
+.dots button { width: 8px; height: 8px; border-radius: 999px; border: 0; padding: 0; background: rgba(255,255,255,.45); cursor: pointer; transition: width .3s; }
+.dots button[aria-current="true"] { width: 22px; background: var(--white); }
 .hero-q { grid-area: q; align-self: end; min-width: 0; }
-.hero-q .qm { font-size: 64px; font-weight: 900; line-height: .6; display: block; height: 30px; }
-.hero-q .kicker { display: inline-block; font-size: 13px; font-weight: 700; margin-bottom: 10px; border-bottom: 2px solid var(--ink); }
+/* 새로운 발견 마크: 큰 4갈래 반짝임 + 작은 반짝임 */
+.hero-q .qm { display: block; width: 46px; height: 46px; margin-bottom: 10px; }
+.hero-q .qm svg { width: 100%; height: 100%; display: block; overflow: visible; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-q .qm .s1 { transform-origin: 22px 24px; animation: twinkle 2.4s ease-in-out infinite; }
+  .hero-q .qm .s2 { transform-origin: 39px 7px; animation: twinkle 2.4s ease-in-out 1.2s infinite; }
+}
+@keyframes twinkle { 0%, 100% { transform: scale(1); } 50% { transform: scale(.82); } }
+.hero-q .kicker { display: inline-block; font-size: 13px; font-weight: 700; margin-bottom: 10px; border-bottom: 2px solid var(--white); }
 .hero-q h1 { margin: 0; font-size: clamp(26px, 3vw, 36px); font-weight: 900; line-height: 1.3; letter-spacing: -1px; word-break: keep-all; overflow-wrap: break-word; text-wrap: balance; }
 /* 문맥 줄바꿈: 쉼표·말줄임 등 의미 단위로 나눈 각 줄. 줄 안에서 다시 넘칠 때도 균형 맞춤 */
 .hero-q h1 .ln { display: block; text-wrap: balance; }
 .hero-q h1 a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
 .hero-img { grid-area: img; position: relative; align-self: center; min-width: 0; }
-.hero-img .frame { width: 100%; aspect-ratio: 16 / 9; background: var(--white); border: 1.5px solid var(--ink); overflow: hidden; display: block; }
+.hero-img .frame { width: 100%; aspect-ratio: 16 / 9; background: var(--white); border: 1.5px solid var(--white); overflow: hidden; display: block; box-shadow: 0 18px 40px rgba(40, 10, 110, .35); }
 .hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.sticker { position: absolute; top: -10px; left: -22px; width: 92px; height: 92px; border-radius: 50%; background: var(--orange); color: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(-14deg); font-weight: 900; font-size: 13px; line-height: 1.2; box-shadow: 0 0 0 3px var(--lime); }
-.sticker b { font-size: 16px; }
+.sticker { position: absolute; top: -10px; left: -22px; width: 92px; height: 92px; border-radius: 50%; background: var(--orange); color: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(-14deg); font-weight: 900; line-height: 1; box-shadow: 0 0 0 3px var(--white), 0 8px 18px rgba(40, 10, 110, .35); }
+.sticker b { font-size: 27px; font-weight: 900; letter-spacing: 1px; }
 .hero-p { grid-area: p; align-self: start; min-width: 0; max-width: 560px; }
 .hero-p .lbl { font-size: 12px; font-weight: 900; letter-spacing: 2px; color: var(--orange); background: var(--ink); padding: 2px 8px; display: inline-block; margin-bottom: 10px; }
-.hero-p p { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.45; border-bottom: 2px solid var(--ink); padding-bottom: 10px; text-wrap: balance; }
+.hero-p p { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.45; border-bottom: 2px solid var(--white); padding-bottom: 10px; text-wrap: balance; }
 .stats { display: flex; gap: 16px; font-size: 12px; font-weight: 700; }
 
 /* sections */
 .sec { padding-block: 56px 0; }
 .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 22px; }
 .sec-head h2 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.8px; }
-.sec-head h2 em { font-style: normal; background: linear-gradient(transparent 58%, var(--lime) 58%); }
+.sec-head h2 em { font-style: normal; background: linear-gradient(transparent 58%, var(--neon-soft) 58%); }
 .sec-head .meta { color: var(--gray); font-size: 13px; }
 
 .cat-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding-block: 24px; border-top: 2px solid var(--ink); }
@@ -102,7 +114,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
 .card:hover .thumb img { transform: scale(1.03); }
 .thumb .ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--gray); font-size: 12px; padding: 8px; }
-.pill { justify-self: start; font-size: 11px; font-weight: 700; background: var(--ink); color: var(--lime); padding: 3px 10px; border-radius: 999px; }
+.pill { justify-self: start; font-size: 11px; font-weight: 700; background: var(--ink); color: var(--neon-glow); padding: 3px 10px; border-radius: 999px; }
 .card h4 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.45; letter-spacing: -0.3px; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card h4 a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .card .sum { margin: 0; color: #4a4a47; font-size: 14px; }
@@ -125,7 +137,7 @@ details.more { border-top: 1px solid var(--rule); }
 details.more summary { cursor: pointer; list-style: none; display: flex; justify-content: center; padding-block: 14px; }
 details.more summary::-webkit-details-marker { display: none; }
 details.more summary span { border: 1px solid var(--ink); font-size: 13px; font-weight: 700; padding: 6px 18px; background: var(--white); }
-details.more summary:hover span { background: var(--lime); }
+details.more summary:hover span { background: var(--neon-soft); }
 details.more[open] summary span::after { content: " 접기"; }
 .heads { list-style: none; margin: 0; padding: 0 0 8px; }
 .heads li { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding-block: 8px; border-top: 1px dashed var(--rule); font-size: 14px; }
@@ -138,7 +150,8 @@ details.more[open] summary span::after { content: " 접기"; }
 
 .state { border: 1px dashed var(--ink); background: var(--paper); padding: 32px 20px; text-align: center; color: var(--gray); }
 footer { margin-top: 64px; background: var(--ink); color: #cfcfcf; font-size: 13px; padding-block: 28px 36px; }
-footer b { color: var(--lime); }
+footer p { margin: 0; line-height: 1.8; }
+footer a { color: var(--neon-glow); text-decoration: underline; text-underline-offset: 3px; }
 
 @media (max-width: 860px) {
   .slide { grid-template-columns: 1fr; grid-template-areas: "q" "img" "p"; align-items: start; gap: 18px; padding: 14px 0 20px; }
@@ -159,9 +172,9 @@ footer b { color: var(--lime); }
   <div class="wrap">
     <nav aria-label="바로가기">
       <a href="#latest-sec">최신호</a>
-      <a href="#archive-sec">지난 기사</a>
+      <a href="#archive-sec">지난 뉴스레터</a>
     </nav>
-    <span>게임 · 마케팅 · AI 데일리 브리핑</span>
+    <span>국내/해외 게임 · 이색 마케팅 · AI 기술</span>
   </div>
 </div>
 
@@ -170,7 +183,7 @@ footer b { color: var(--lime); }
     <div class="mark">Daily Marketing<small>NEWSLETTER ARCHIVE</small></div>
     <label class="search" for="q">
       <input id="q" type="search" placeholder="검색어를 입력해 보세요." autocomplete="off" aria-label="기사 검색">
-      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#E1FF01" stroke-width="2"/><path d="M11 11l3.5 3.5" stroke="#E1FF01" stroke-width="2" stroke-linecap="round"/></svg>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#E9DAFF" stroke-width="2"/><path d="M11 11l3.5 3.5" stroke="#E9DAFF" stroke-width="2" stroke-linecap="round"/></svg>
     </label>
   </div>
 </div>
@@ -179,7 +192,7 @@ footer b { color: var(--lime); }
   <div class="wrap">
     <div class="viewport" id="viewport">
       <div class="track" id="track" aria-live="off">
-        <div class="slide"><div class="hero-q"><span class="qm" aria-hidden="true">“</span><h1>뉴스레터를 불러오는 중입니다</h1></div></div>
+        <div class="slide"><div class="hero-q"><h1>뉴스레터를 불러오는 중입니다</h1></div></div>
       </div>
     </div>
     <div class="hero-nav">
@@ -207,15 +220,17 @@ footer b { color: var(--lime); }
 
   <section class="sec" id="archive-sec" aria-labelledby="pastTitle">
     <div class="sec-head">
-      <h2 id="pastTitle">지난 기사, <em>카테고리별로</em></h2>
-      <span class="meta">카테고리마다 최근 5건 · 나머지는 더보기</span>
+      <h2 id="pastTitle"><em>지난 뉴스레터</em></h2>
     </div>
     <div class="arch" id="past"></div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap">이 아카이브는 <b>Claude AI</b>가 매일 아침 뉴스레터 발송 후 자동으로 갱신합니다. 썸네일은 최신호에만 표시됩니다.</div>
+  <div class="wrap">
+    <p>*이 뉴스레터를 Email로 받고 싶다면 아래 메일로 연락주세요.</p>
+    <p>*Contact: <a href="mailto:genesis93k@gmail.com">genesis93k@gmail.com</a></p>
+  </div>
 </footer>
 
 <script>
@@ -311,8 +326,23 @@ function headline(it) {
   return a;
 }
 
+// 새로운 발견 마크: 큰 4갈래 반짝임 + 작은 반짝임 (SVG)
+function discoveryMark() {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 46 46");
+  const star = (cls, cx, cy, r, w, fill) => {
+    const p = document.createElementNS(NS, "path");
+    p.setAttribute("class", cls);
+    p.setAttribute("fill", fill);
+    p.setAttribute("d", `M${cx} ${cy - r} C${cx + w} ${cy - w} ${cx + w} ${cy - w} ${cx + r} ${cy} C${cx + w} ${cy + w} ${cx + w} ${cy + w} ${cx} ${cy + r} C${cx - w} ${cy + w} ${cx - w} ${cy + w} ${cx - r} ${cy} C${cx - w} ${cy - w} ${cx - w} ${cy - w} ${cx} ${cy - r} Z`);
+    return p;
+  };
+  svg.append(star("s1", 22, 24, 20, 3.2, "#FFFFFF"), star("s2", 39, 7, 7, 1.3, "#FFE27A"));
+  return el("span", { class: "qm", "aria-hidden": "true" }, svg);
+}
+
 function slide(latest, it, idx) {
-  const md = latest.label.match(/^\d\d\/(\d\d\/\d\d)/);
   const u = safeUrl(it.url);
   const src = imgData(idx);
   const frame = el("a", u ? { class: "frame", href: u, target: "_blank", rel: "noopener noreferrer", tabindex: "-1", "aria-hidden": "true" } : { class: "frame" },
@@ -320,11 +350,11 @@ function slide(latest, it, idx) {
   if (!src) frame.style.background = "var(--paper)";
   return el("div", { class: "slide", role: "group", "aria-roledescription": "slide", "aria-label": (idx + 1) + " / " + latest.items.length },
     el("div", { class: "hero-q" },
-      el("span", { class: "qm", "aria-hidden": "true", text: "“" }),
+      discoveryMark(),
       el("span", { class: "kicker", text: latest.label + " · " + (CATNAME[it.cat] || "") }),
       el("h1", { "aria-label": it.title }, headline(it))),
     el("div", { class: "hero-img" }, frame,
-      el("div", { class: "sticker" }, el("b", { text: md ? md[1] : "NEW" }), "발행", el("br"), "오늘의 레터")),
+      el("div", { class: "sticker", "aria-label": "신간" }, el("b", { text: "NEW" }))),
     el("div", { class: "hero-p" }, el("span", { class: "lbl", text: "POINT" }), el("p", { text: it.insight || "" })));
 }
 
@@ -402,7 +432,7 @@ function render() {
   }
   watchThumbs(latest.date);
   const total = issues.reduce((s, i) => s + (i.items || []).length, 0);
-  $("statIssues").textContent = "발행 " + issues.length + "회";
+  $("statIssues").textContent = latest.date.slice(0, 4) + "-" + issues.length + "호";
   $("statItems").textContent = "기사 " + total + "건";
   $("statSince").textContent = "since " + issues[issues.length - 1].label.slice(0, 8);
   $("latestMeta").textContent = latest.label + " 발행 · " + latest.items.length + "건";
