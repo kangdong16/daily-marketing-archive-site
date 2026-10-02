@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>데일리 마케팅 뉴스레터 아카이브</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: lime trend-magazine band (quote headline · thumbnail · POINT) → category rows of image cards → archive lists with black-ruled rows + 더보기
+   Single deliberate light look (lime / ink / paper / orange sticker), so no dark variant. */
+:root {
+  color-scheme: light;
+  --lime: #E1FF01;
+  --ink: #0F0F0F;
+  --paper: #F6F5F1;
+  --white: #FFFFFF;
+  --gray: #7A7A76;
+  --rule: #D9D8D2;
+  --orange: #FF6000;
+  --orange-soft: #FFEBDD;
+  --focus: #FF6000;
+  --f: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+* { box-sizing: border-box; }
+body { background: var(--white); color: var(--ink); font-family: var(--f); font-size: 15px; line-height: 1.6; word-break: keep-all; overflow-wrap: break-word; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-inline: 16px; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* top utility strip */
+.util { background: var(--ink); color: var(--white); font-size: 12px; }
+.util .wrap { display: flex; gap: 20px; align-items: center; justify-content: space-between; min-height: 36px; flex-wrap: wrap; }
+.util nav { display: flex; gap: 18px; flex-wrap: wrap; }
+.util nav a { opacity: .85; font-weight: 500; }
+.util nav a:hover { opacity: 1; color: var(--lime); }
+
+/* sticky lime bar */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--lime); border-bottom: 1px solid var(--ink); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; flex-wrap: wrap; padding-block: 10px; }
+.mark { font-weight: 900; font-size: 20px; letter-spacing: -0.8px; line-height: 1.1; }
+.mark small { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+.search { display: flex; align-items: center; background: var(--ink); border-radius: 999px; padding: 4px 6px 4px 16px; width: min(340px, 100%); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--white); font: inherit; font-size: 13px; padding: 6px 0; }
+.search input::placeholder { color: #cfcfcf; }
+.search input:focus-visible { outline: none; }
+.search:focus-within { outline: 3px solid var(--orange); outline-offset: 2px; }
+.search svg { flex: none; margin-right: 8px; }
+
+/* hero */
+.hero { background: var(--lime); padding-block: 36px 0; overflow: hidden; }
+.viewport { overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; }
+.viewport.dragging { cursor: grabbing; }
+.track { display: flex; transition: transform .55s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+.viewport.dragging .track { transition: none; }
+/* PC: 왼쪽 16:9 썸네일 / 오른쪽 위 헤드라인, 아래 POINT */
+.slide { flex: 0 0 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); grid-template-areas: "img q" "img p"; column-gap: 40px; row-gap: 22px; padding-block: 18px 32px; padding-left: 24px; }
+.slide img { -webkit-user-drag: none; pointer-events: none; }
+.hero-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 18px; border-top: 1px solid var(--ink); flex-wrap: wrap; }
+.ctrl { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; }
+.ctrl button { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--white); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.ctrl button:hover { background: var(--ink); }
+.ctrl button:hover path { stroke: var(--lime); }
+.ctrl .count { min-width: 56px; text-align: center; }
+.dots { display: flex; gap: 6px; }
+.dots button { width: 8px; height: 8px; border-radius: 999px; border: 0; padding: 0; background: rgba(15,15,15,.25); cursor: pointer; transition: width .3s; }
+.dots button[aria-current="true"] { width: 22px; background: var(--ink); }
+.hero-q { grid-area: q; align-self: end; min-width: 0; }
+.hero-q .qm { font-size: 64px; font-weight: 900; line-height: .6; display: block; height: 30px; }
+.hero-q .kicker { display: inline-block; font-size: 13px; font-weight: 700; margin-bottom: 10px; border-bottom: 2px solid var(--ink); }
+.hero-q h1 { margin: 0; font-size: clamp(26px, 3vw, 36px); font-weight: 900; line-height: 1.3; letter-spacing: -1px; word-break: keep-all; overflow-wrap: break-word; text-wrap: balance; }
+/* 문맥 줄바꿈: 쉼표·말줄임 등 의미 단위로 나눈 각 줄. 줄 안에서 다시 넘칠 때도 균형 맞춤 */
+.hero-q h1 .ln { display: block; text-wrap: balance; }
+.hero-q h1 a:hover { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.hero-img { grid-area: img; position: relative; align-self: center; min-width: 0; }
+.hero-img .frame { width: 100%; aspect-ratio: 16 / 9; background: var(--white); border: 1.5px solid var(--ink); overflow: hidden; display: block; }
+.hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sticker { position: absolute; top: -10px; left: -22px; width: 92px; height: 92px; border-radius: 50%; background: var(--orange); color: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transform: rotate(-14deg); font-weight: 900; font-size: 13px; line-height: 1.2; box-shadow: 0 0 0 3px var(--lime); }
+.sticker b { font-size: 16px; }
+.hero-p { grid-area: p; align-self: start; min-width: 0; max-width: 560px; }
+.hero-p .lbl { font-size: 12px; font-weight: 900; letter-spacing: 2px; color: var(--orange); background: var(--ink); padding: 2px 8px; display: inline-block; margin-bottom: 10px; }
+.hero-p p { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.45; border-bottom: 2px solid var(--ink); padding-bottom: 10px; text-wrap: balance; }
+.stats { display: flex; gap: 16px; font-size: 12px; font-weight: 700; }
+
+/* sections */
+.sec { padding-block: 56px 0; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; margin-bottom: 22px; }
+.sec-head h2 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.8px; }
+.sec-head h2 em { font-style: normal; background: linear-gradient(transparent 58%, var(--lime) 58%); }
+.sec-head .meta { color: var(--gray); font-size: 13px; }
+
+.cat-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding-block: 24px; border-top: 2px solid var(--ink); }
+.cat-row:last-child { border-bottom: 2px solid var(--ink); }
+.cat-name { display: flex; flex-direction: column; gap: 6px; }
+.cat-name h3 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+.cat-name span { font-size: 12px; color: var(--gray); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
+.card { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.thumb { display: block; aspect-ratio: 16 / 9; max-width: 100%; background: var(--paper); border: 1px solid var(--ink); overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+.card:hover .thumb img { transform: scale(1.03); }
+.thumb .ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--gray); font-size: 12px; padding: 8px; }
+.pill { justify-self: start; font-size: 11px; font-weight: 700; background: var(--ink); color: var(--lime); padding: 3px 10px; border-radius: 999px; }
+.card h4 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.45; letter-spacing: -0.3px; text-wrap: balance; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card h4 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.card .sum { margin: 0; color: #4a4a47; font-size: 14px; }
+.point { display: flex; gap: 10px; align-items: baseline; background: var(--paper); padding: 8px 12px; font-size: 14px; font-weight: 500; }
+.point b { flex: none; font-size: 11px; font-weight: 900; letter-spacing: 1px; color: var(--orange); }
+.date { font-size: 12px; color: var(--gray); }
+
+/* archive */
+.arch { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 32px 40px; }
+.box { border-top: 2px solid var(--ink); min-width: 0; }
+.box > header { display: flex; justify-content: space-between; align-items: baseline; padding-block: 14px 8px; }
+.box > header h3 { margin: 0; font-size: 18px; font-weight: 900; }
+.box > header span { font-size: 12px; color: var(--gray); }
+.row { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 4px 16px; padding-block: 14px; border-top: 1px solid var(--rule); }
+.row .date { padding-top: 3px; }
+.row h4 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.5; }
+.row h4 a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.row .point { grid-column: 2; font-size: 13px; padding: 6px 10px; }
+details.more { border-top: 1px solid var(--rule); }
+details.more summary { cursor: pointer; list-style: none; display: flex; justify-content: center; padding-block: 14px; }
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary span { border: 1px solid var(--ink); font-size: 13px; font-weight: 700; padding: 6px 18px; background: var(--white); }
+details.more summary:hover span { background: var(--lime); }
+details.more[open] summary span::after { content: " 접기"; }
+.heads { list-style: none; margin: 0; padding: 0 0 8px; }
+.heads li { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 16px; padding-block: 8px; border-top: 1px dashed var(--rule); font-size: 14px; }
+.heads a:hover { text-decoration: underline; }
+
+.results { border-top: 2px solid var(--ink); }
+.results .heads li { grid-template-columns: 82px 88px minmax(0, 1fr); }
+.results .tag { font-size: 12px; font-weight: 700; }
+.results p { margin: 0; padding-block: 14px; font-weight: 700; }
+
+.state { border: 1px dashed var(--ink); background: var(--paper); padding: 32px 20px; text-align: center; color: var(--gray); }
+footer { margin-top: 64px; background: var(--ink); color: #cfcfcf; font-size: 13px; padding-block: 28px 36px; }
+footer b { color: var(--lime); }
+
+@media (max-width: 860px) {
+  .slide { grid-template-columns: 1fr; grid-template-areas: "q" "img" "p"; align-items: start; gap: 18px; padding: 14px 0 20px; }
+  .hero-p { max-width: none; }
+  .hero-img { max-width: 360px; width: calc(100% - 24px); margin-left: 24px; }
+  .cat-row { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (max-width: 520px) {
+  .row, .heads li, .results .heads li { grid-template-columns: 1fr; gap: 2px; }
+  .row .point { grid-column: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .thumb img { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="util">
+  <div class="wrap">
+    <nav aria-label="바로가기">
+      <a href="#latest-sec">최신호</a>
+      <a href="#archive-sec">지난 기사</a>
+    </nav>
+    <span>게임 · 마케팅 · AI 데일리 브리핑</span>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="mark">Daily Marketing<small>NEWSLETTER ARCHIVE</small></div>
+    <label class="search" for="q">
+      <input id="q" type="search" placeholder="검색어를 입력해 보세요." autocomplete="off" aria-label="기사 검색">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="#E1FF01" stroke-width="2"/><path d="M11 11l3.5 3.5" stroke="#E1FF01" stroke-width="2" stroke-linecap="round"/></svg>
+    </label>
+  </div>
+</div>
+
+<section class="hero" aria-roledescription="carousel" aria-label="최신호 기사 롤링">
+  <div class="wrap">
+    <div class="viewport" id="viewport">
+      <div class="track" id="track" aria-live="off">
+        <div class="slide"><div class="hero-q"><span class="qm" aria-hidden="true">“</span><h1>뉴스레터를 불러오는 중입니다</h1></div></div>
+      </div>
+    </div>
+    <div class="hero-nav">
+      <div class="stats tnum"><span id="statIssues">–</span><span id="statItems">–</span><span id="statSince">–</span></div>
+      <div class="dots" id="dots" role="group" aria-label="슬라이드 선택"></div>
+      <div class="ctrl">
+        <button type="button" id="prev" aria-label="이전 기사"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M8.5 2.5L4 7l4.5 4.5" fill="none" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <span class="count tnum" id="count">– / –</span>
+        <button type="button" id="next" aria-label="다음 기사"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M5.5 2.5L10 7l-4.5 4.5" fill="none" stroke="#0F0F0F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div id="results" hidden></div>
+
+  <section class="sec" id="latest-sec" aria-labelledby="latestTitle">
+    <div class="sec-head">
+      <h2 id="latestTitle"><em>오늘의 뉴스레터</em></h2>
+      <span class="meta" id="latestMeta"></span>
+    </div>
+    <div id="latest"><div class="state">뉴스레터를 불러오는 중입니다…</div></div>
+  </section>
+
+  <section class="sec" id="archive-sec" aria-labelledby="pastTitle">
+    <div class="sec-head">
+      <h2 id="pastTitle">지난 기사, <em>카테고리별로</em></h2>
+      <span class="meta">카테고리마다 최근 5건 · 나머지는 더보기</span>
+    </div>
+    <div class="arch" id="past"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">이 아카이브는 <b>Claude AI</b>가 매일 아침 뉴스레터 발송 후 자동으로 갱신합니다. 썸네일은 최신호에만 표시됩니다.</div>
+</footer>
+
+<script>
+const CATS = [
+  { id: "domestic", name: "국내 게임" },
+  { id: "global", name: "해외 게임" },
+  { id: "marketing", name: "이색 마케팅" },
+  { id: "ai", name: "AI 기술" },
+];
+const CATNAME = Object.fromEntries(CATS.map((c) => [c.id, c.name]));
+const RECENT = 5;
+let issues = [];
+// GitHub Pages 판: 데이터는 data/issues.json, 썸네일은 thumbs/<날짜>/<n>.jpg (items[].thumbFile)
+const thumbs = { loaded: true };
+function watchThumbs() {}
+
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null) continue;
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) n.append(k);
+  return n;
+}
+function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : null; }
+function link(url, text) {
+  const u = safeUrl(url);
+  return u ? el("a", { href: u, target: "_blank", rel: "noopener noreferrer", text }) : el("span", { text });
+}
+function imgData(idx) {
+  const f = issues[0]?.items?.[idx]?.thumbFile;
+  return /^thumbs\/[\w.\-\/]+\.jpg$/.test(f || "") ? f : null;
+}
+function pointBox(it) {
+  return it.insight ? el("div", { class: "point" }, el("b", { text: "POINT" }), el("span", { text: it.insight })) : null;
+}
+function thumbBox(it, idx) {
+  const src = imgData(idx);
+  const inner = src ? el("img", { src, alt: "", loading: "lazy" })
+    : el("span", { class: "ph", text: thumbs.loaded ? "이미지를 불러오지 못했습니다…" : "" });
+  const u = safeUrl(it.url);
+  return u ? el("a", { class: "thumb", href: u, target: "_blank", rel: "noopener noreferrer", "aria-hidden": "true", tabindex: "-1" }, inner)
+           : el("div", { class: "thumb" }, inner);
+}
+function shortDate(label) { return (label || "").replace(/^\d\d\//, ""); }
+
+// 최신호 카드: 썸네일 + 카테고리 + 제목 + 설명 + POINT
+function card(it, idx, label) {
+  return el("article", { class: "card" }, thumbBox(it, idx),
+    el("span", { class: "pill", text: CATNAME[it.cat] || "" }),
+    el("h4", {}, link(it.url, it.title)),
+    it.summary ? el("p", { class: "sum", text: it.summary }) : null,
+    pointBox(it),
+    el("span", { class: "date tnum", text: label + (it.source ? " · " + it.source : "") }));
+}
+// 지난 기사: 날짜 + 헤드라인 + POINT
+function row(it, label) {
+  return el("article", { class: "row" }, el("span", { class: "date tnum", text: shortDate(label) }),
+    el("h4", {}, link(it.url, it.title)), pointBox(it));
+}
+
+// ── 히어로 캐러셀: 최신호 기사 전체를 3초마다 롤링, 스와이프·화살표·점으로 이동
+const ROLL_MS = 3000;
+const hero = { idx: 0, n: 0, timer: null, paused: false, date: null };
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// 헤드라인을 의미 단위(쉼표·말줄임·콜론·대시 뒤)에서 둘로 나눈다. 위아래 길이가 가장 비슷한 지점을 고르고,
+// 한쪽이 너무 짧아지면(전체의 28% 미만) 나누지 않고 브라우저 균형 맞춤에 맡긴다.
+function splitHeadline(t) {
+  const s = (t || "").trim();
+  if (s.length < 14) return [s];
+  const re = /(,|…|\.\.\.|:| [-–—] | · )\s*/g;
+  let best = null, m;
+  while ((m = re.exec(s))) {
+    const cut = m.index + m[0].length;
+    const a = s.slice(0, cut).trim(), b = s.slice(cut).trim();
+    if (!b) continue;
+    const minLen = Math.max(5, Math.round(s.length * 0.28));
+    if (a.length < minLen || b.length < minLen) continue;
+    const score = Math.abs(a.length - b.length);
+    if (!best || score < best.score) best = { score, parts: [a.replace(/\s[-–—·]$/, ""), b] };
+  }
+  return best ? best.parts : [s];
+}
+function headline(it) {
+  const parts = splitHeadline(it.title);
+  const u = safeUrl(it.url);
+  const a = u ? el("a", { href: u, target: "_blank", rel: "noopener noreferrer" }) : el("span");
+  if (parts.length === 1) a.textContent = parts[0];
+  else parts.forEach((p, i) => { if (i) a.append(" "); a.append(el("span", { class: "ln", text: p })); });
+  return a;
+}
+
+function slide(latest, it, idx) {
+  const md = latest.label.match(/^\d\d\/(\d\d\/\d\d)/);
+  const u = safeUrl(it.url);
+  const src = imgData(idx);
+  const frame = el("a", u ? { class: "frame", href: u, target: "_blank", rel: "noopener noreferrer", tabindex: "-1", "aria-hidden": "true" } : { class: "frame" },
+    src ? el("img", { src, alt: "" }) : el("span", { class: "thumb ph" }));
+  if (!src) frame.style.background = "var(--paper)";
+  return el("div", { class: "slide", role: "group", "aria-roledescription": "slide", "aria-label": (idx + 1) + " / " + latest.items.length },
+    el("div", { class: "hero-q" },
+      el("span", { class: "qm", "aria-hidden": "true", text: "“" }),
+      el("span", { class: "kicker", text: latest.label + " · " + (CATNAME[it.cat] || "") }),
+      el("h1", { "aria-label": it.title }, headline(it))),
+    el("div", { class: "hero-img" }, frame,
+      el("div", { class: "sticker" }, el("b", { text: md ? md[1] : "NEW" }), "발행", el("br"), "오늘의 레터")),
+    el("div", { class: "hero-p" }, el("span", { class: "lbl", text: "POINT" }), el("p", { text: it.insight || "" })));
+}
+
+function go(i, user) {
+  if (!hero.n) return;
+  hero.idx = (i + hero.n) % hero.n;
+  $("track").style.transform = "translateX(" + (-hero.idx * 100) + "%)";
+  $("count").textContent = String(hero.idx + 1).padStart(2, "0") + " / " + String(hero.n).padStart(2, "0");
+  [...$("dots").children].forEach((b, k) => b.setAttribute("aria-current", k === hero.idx ? "true" : "false"));
+  [...$("track").children].forEach((s, k) => { s.inert = k !== hero.idx; });
+  if (user) restart();
+}
+function restart() {
+  clearInterval(hero.timer);
+  if (reduceMotion || hero.n < 2) return;
+  hero.timer = setInterval(() => { if (!hero.paused && !document.hidden) go(hero.idx + 1); }, ROLL_MS);
+}
+
+function renderHero(latest) {
+  if (hero.date !== latest.date) { hero.idx = 0; hero.date = latest.date; }
+  hero.n = latest.items.length;
+  $("track").replaceChildren(...latest.items.map((it, i) => slide(latest, it, i)));
+  $("dots").replaceChildren(...latest.items.map((it, i) =>
+    el("button", { type: "button", "aria-label": (i + 1) + "번째 기사: " + it.title })));
+  [...$("dots").children].forEach((b, i) => b.addEventListener("click", () => go(i, true)));
+  go(hero.idx);
+  if (!hero.timer) restart();
+}
+
+(function setupCarousel() {
+  const vp = $("viewport");
+  $("prev").addEventListener("click", () => go(hero.idx - 1, true));
+  $("next").addEventListener("click", () => go(hero.idx + 1, true));
+  const heroSec = vp.closest(".hero");
+  heroSec.addEventListener("mouseenter", () => { hero.paused = true; });
+  heroSec.addEventListener("mouseleave", () => { hero.paused = false; });
+  heroSec.addEventListener("focusin", () => { hero.paused = true; });
+  heroSec.addEventListener("focusout", () => { hero.paused = false; });
+  heroSec.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") go(hero.idx - 1, true);
+    if (e.key === "ArrowRight") go(hero.idx + 1, true);
+  });
+  // 스와이프 / 드래그
+  let x0 = null, dx = 0, moved = false;
+  vp.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    x0 = e.clientX; dx = 0; moved = false; hero.paused = true;
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (x0 == null) return;
+    dx = e.clientX - x0;
+    if (Math.abs(dx) > 6 && !moved) { moved = true; vp.classList.add("dragging"); }
+    if (moved) $("track").style.transform = "translateX(calc(" + (-hero.idx * 100) + "% + " + dx + "px))";
+  });
+  const end = (e) => {
+    if (x0 == null) return;
+    vp.classList.remove("dragging");
+    const w = vp.clientWidth || 1;
+    if (moved && Math.abs(dx) > Math.min(60, w * 0.15)) go(hero.idx + (dx < 0 ? 1 : -1), true); else go(hero.idx);
+    x0 = null; hero.paused = e.pointerType === "mouse" && heroSec.matches(":hover");
+  };
+  window.addEventListener("pointerup", end);
+  window.addEventListener("pointercancel", end);
+  // 드래그한 뒤에는 링크가 열리지 않게
+  vp.addEventListener("click", (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+})();
+
+function render() {
+  const latest = issues[0];
+  if (!latest) {
+    $("track").replaceChildren(el("div", { class: "slide" }, el("div", { class: "hero-q" }, el("h1", { text: "아직 저장된 뉴스레터가 없습니다" }))));
+    $("latest").replaceChildren(el("div", { class: "state", text: "첫 발송이 끝나면 이곳에 표시됩니다." }));
+    $("past").replaceChildren();
+    return;
+  }
+  watchThumbs(latest.date);
+  const total = issues.reduce((s, i) => s + (i.items || []).length, 0);
+  $("statIssues").textContent = "발행 " + issues.length + "회";
+  $("statItems").textContent = "기사 " + total + "건";
+  $("statSince").textContent = "since " + issues[issues.length - 1].label.slice(0, 8);
+  $("latestMeta").textContent = latest.label + " 발행 · " + latest.items.length + "건";
+  renderHero(latest);
+
+  $("latest").replaceChildren(...CATS.map((c) => {
+    const its = latest.items.map((it, idx) => ({ it, idx })).filter((x) => x.it.cat === c.id);
+    return el("div", { class: "cat-row" },
+      el("div", { class: "cat-name" }, el("h3", { text: c.name }), el("span", { text: its.length + "건" })),
+      its.length ? el("div", { class: "cards" }, ...its.map((x) => card(x.it, x.idx, latest.label)))
+                 : el("p", { class: "date", text: "이 호에는 해당 카테고리 기사가 없습니다." }));
+  }));
+
+  const older = issues.slice(1);
+  $("past").replaceChildren(...CATS.map((c) => {
+    const rows = [];
+    for (const iss of older) for (const it of iss.items || []) if (it.cat === c.id) rows.push({ it, label: iss.label });
+    const kids = rows.slice(0, RECENT).map((r) => row(r.it, r.label));
+    const rest = rows.slice(RECENT);
+    if (rest.length) {
+      kids.push(el("details", { class: "more" },
+        el("summary", {}, el("span", { text: "더보기 " + rest.length + "건" })),
+        el("ul", { class: "heads" }, ...rest.map((r) =>
+          el("li", {}, el("span", { class: "date tnum", text: shortDate(r.label) }), link(r.it.url, r.it.title))))));
+    }
+    if (!rows.length) kids.push(el("p", { class: "date", text: "지난 기사가 아직 없습니다." }));
+    return el("section", { class: "box", "aria-label": c.name + " 지난 기사" },
+      el("header", {}, el("h3", { text: c.name }), el("span", { text: "지난 " + rows.length + "건" })), ...kids);
+  }));
+  search();
+}
+
+function search() {
+  const raw = $("q").value.trim();
+  const q = raw.toLowerCase();
+  const box = $("results");
+  const show = (on) => { box.hidden = !on; $("latest-sec").hidden = on; $("archive-sec").hidden = on; };
+  if (!q) { show(false); return; }
+  const hits = [];
+  for (const iss of issues) for (const it of iss.items || []) {
+    const hay = [it.title, it.summary, it.insight, it.source].join(" ").toLowerCase();
+    if (hay.includes(q)) hits.push({ it, label: iss.label });
+  }
+  box.replaceChildren(el("section", { class: "sec" },
+    el("div", { class: "sec-head" }, el("h2", {}, el("em", { text: "‘" + raw + "’" }), " 검색 결과"), el("span", { class: "meta", text: hits.length + "건" })),
+    el("div", { class: "results" },
+      hits.length ? el("ul", { class: "heads" }, ...hits.slice(0, 200).map((h) =>
+        el("li", {}, el("span", { class: "date tnum", text: shortDate(h.label) }),
+          el("span", { class: "tag", text: CATNAME[h.it.cat] || "" }), link(h.it.url, h.it.title))))
+      : el("p", { text: "검색 결과가 없습니다. 다른 단어로 찾아보세요." }))));
+  show(true);
+}
+$("q").addEventListener("input", search);
+
+(async () => {
+  try {
+    const res = await fetch("data/issues.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    issues = (data.issues || []).filter((d) => d && d.date && Array.isArray(d.items) && d.items.length)
+      .sort((a, b) => (a.date < b.date ? 1 : -1));
+    render();
+  } catch (e) {
+    $("track").replaceChildren(el("div", { class: "slide" }, el("div", { class: "hero-q" }, el("h1", { text: "뉴스레터 데이터를 불러오지 못했습니다" }))));
+    $("latest").replaceChildren(el("div", { class: "state", text: "잠시 후 새로고침해 주세요." }));
+  }
+})();
+</script>
+
+</body>
+</html>
